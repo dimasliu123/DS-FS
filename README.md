@@ -28,6 +28,10 @@ knn_pred = knn.predict(sc_test)
 * Quantized Scaling
 * Standardize/ Z-Score 
 
+### Scaling Importance :
+* Difference between each scaling from distribution.
+![scaled](https://user-images.githubusercontent.com/86581543/162142204-aa1ab1c4-f5cc-4154-be08-773163cb0bd8.png)
+
 ### Supervised Learning :
 * Naive Bayes
 * K Nearest Neighbor
