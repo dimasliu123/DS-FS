@@ -242,3 +242,23 @@ class SoftmaxRegression :
     @staticmethod
     def categoryLogLoss(y_true, y_pred):
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]))
+
+
+class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
+    def __init__(self, lr :float): # measuring similarity : || xi - wi || comp neural network
+        self.lr = lr
+
+    def fit(self, X):
+        self.X = X
+
+    def predict(self, X):
+        pass 
+    def __best_matching_units():
+        pass
+
+    @staticmethod
+    def euclidean_distance(X1, X2):
+        dist = 0.
+        for i in range(X1):
+            dist += X1[i] - X2[i]) ** 2)
+        return np.sqrt(dist)

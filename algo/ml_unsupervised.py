@@ -1,4 +1,5 @@
 import numpy as np
+np.random.seed(2022)
 
 class PCA : 
     def __init__(self, n_components : int):
@@ -37,23 +38,4 @@ class KMeans :
         dist = 0.
         for i in range(len(P)):
             dist += np.sqrt((P[i] - Q[i]) ** 2)
-        return dist
-
-class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
-    def __init__(self, lr :float): # measuring similarity : || xi - wi || comp neural network
-        self.lr = lr
-
-    def fit(self, X):
-        self.X = X
-
-    def predict(self, X):
-        pass 
-    def __best_matching_units():
-        pass
-
-    @staticmethod
-    def euclidean_distance(X1, X2):
-        dist = 0.
-        for i in range(X1):
-            dist += np.sqrt(X1[i] - X2[i]) ** 2))
         return dist
