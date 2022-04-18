@@ -78,7 +78,7 @@ class KNearestNeighbor:
         dist = 0
         for i in range(len(p)):
             dist += ((p[i] - q[i]))  ** 2
-        return dist
+        return np.sqrt(dist)
         
     @staticmethod
     def manhattanDistance(p, q):
@@ -130,8 +130,8 @@ class LogisticRegression :
         for _ in range(self.steps):
             if self.use_bias :
                 y_prob = LogisticRegression.sigmoid(np.dot(X, w)) + b
-                dw = (1 / m) * np.dot(X.T, (y_prob - y))
-                db = (1 / m) * np.sum(y_prob - y)
+                dw = (1 / m) * np.dot(X.T, (y_prob - y)) # Calculate Gradient Descent for the weights
+                db = (1 / m) * np.sum(y_prob - y) # Calculate Gradient Descent for the bias
                 w = w - self.lr * dw
                 b = b - self.lr * db
                 loss = LogisticRegression.logloss(y, y_prob, self.epsilon)
