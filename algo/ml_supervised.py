@@ -245,14 +245,16 @@ class SoftmaxRegression :
 
 
 class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
-    def __init__(self, lr :float): # measuring similarity : || xi - wi || comp neural network
+    def __init__(self, lr :float = 0.01, epochs : int = 100): # measuring similarity : || xi - wi || comp neural network
         self.lr = lr
+        self.epochs = epochs
 
     def fit(self, X):
         self.X = X
 
     def predict(self, X):
         pass 
+
     def __best_matching_units():
         pass
 

@@ -1,5 +1,4 @@
 import numpy as np
-# Neural Network activation 
 
 class Activation:
 	def __init__(self, z):
@@ -47,7 +46,7 @@ class Softmax(Activation):
     def __init__(self, z):
         super().__init__(z)
     
-    def forward(self):
+    def forward(self): # f(x) = e(x) / ∑e(x)
         z = self.z
         exp_z = np.exp(z)
         return exp_z / np.sum(exp_z)
