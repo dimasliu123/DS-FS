@@ -129,7 +129,7 @@ class LogisticRegression :
         
         for _ in range(self.steps):
             if self.use_bias :
-                y_prob = LogisticRegression.sigmoid(np.dot(X, w)) + b
+                y_prob = LogisticRegression.sigmoid(np.dot(X, w) + b)
                 dw = (1 / m) * np.dot(X.T, (y_prob - y)) # Calculate Gradient Descent for the weights
                 db = (1 / m) * np.sum(y_prob - y) # Calculate Gradient Descent for the bias
                 w = w - self.lr * dw
@@ -151,7 +151,7 @@ class LogisticRegression :
     def predict(self, X):
         assert X.shape[1] == len(self.w), "Different shape with fitted data !"
         if self.use_bias :
-            z = LogisticRegression.sigmoid(np.dot(X, self.w)) + self.b
+            z = LogisticRegression.sigmoid(np.dot(X, self.w) + self.b )
         else : 
             z = LogisticRegression.sigmoid(np.dot(X, self.w))
         return np.array([1 if i > self.threshold else 0 for i in z])
@@ -262,5 +262,5 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
     def euclidean_distance(X1, X2):
         dist = 0.
         for i in range(X1):
-            dist += X1[i] - X2[i]) ** 2)
+            dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
