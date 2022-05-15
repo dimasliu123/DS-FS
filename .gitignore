@@ -7,3 +7,4 @@ dist\
 *\.png
 *\.ipynb_checkpoints
 __pycache__
+develop/*
