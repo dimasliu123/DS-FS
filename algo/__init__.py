@@ -1,1 +1,2 @@
-from algo import preprocess, ml_supervised, ml_unsupervised, distance, nn, nn_activation
+from algo import preprocess, ml_supervised, ml_unsupervised, distance 
+from algo.nn import layers, nn_activation

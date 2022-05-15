@@ -255,6 +255,10 @@ class SoftmaxRegression :
     def __categoryLogLoss(self, y_true, y_pred):
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]))
 
+class DecisionTree: 
+    def __init__(self):
+        pass
+
 # Learning Vector Quantization
 class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
     def __init__(self, lr :float = 0.01, epochs : int = 100): # measuring similarity : || xi - wi || comp neural network
@@ -276,4 +280,5 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
         for i in range(X1):
             dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
+
 

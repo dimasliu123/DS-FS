@@ -27,8 +27,6 @@ knn_pred = knn.predict(sc_test)
 * Min-Max Scaler
 * Quantized Scaling
 * Standardize/ Z-Score 
-
-### Scaling Importance :
 * Difference between each scaling from distribution.
 ![scaled](https://user-images.githubusercontent.com/86581543/162142204-aa1ab1c4-f5cc-4154-be08-773163cb0bd8.png)
 
@@ -39,7 +37,10 @@ knn_pred = knn.predict(sc_test)
 * Softmax Regression
 
 ### Unsupervised Learning : 
-* PCA
+* 
 
 ### Deep Learning : 
 * Will be updated.
+
+### TODO :
+* Connect each layer into a model, e.g : (on tensorflow/keras : tf.keras.Model, on pytorch : torch.nn.Module) 
