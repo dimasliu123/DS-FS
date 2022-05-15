@@ -109,10 +109,16 @@ class LogisticRegression :
         assert threshold < 1.0 and threshold > 0.0, f"Threshold has to be between 0 and 1 !"
         self.threshold = threshold
     
-    def fit(self, X, y, batch_size=64):
+    def fit(self, X, y, batch_size=32, data_val : tuple = None):
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
+        if data_val is not None :
+            assert len(data_val) == 2, "Validation data is only for feature and size !"
+            X_val, y_val = data_val
+            X_val, y_val = np.array(X_val), np.array(y_val)
+            assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while Train feature has {X.shape[1]} "
+            assert len(np.unique(y_val)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
         N, m = X.shape
         if self.init == "normal":
             w = np.random.normal(loc=0., scale=0.05, size=m)
@@ -124,26 +130,44 @@ class LogisticRegression :
             raise ValueError("Weights initializer is not valid. Use uniform or normal.")
         assert len(X) == len(y), f"Feature size {len(X)} has not the same as label size {len(y)}"            
         losses = []
+        val_losses = []
         
         for _ in range(self.steps):
             perm = np.random.permutation(N)
             X_shuf, y_shuf = X[perm], y[perm]           
+            
             for batch in range(0, N, batch_size):
                 X_batch, y_batch = X_shuf[batch:batch+batch_size], y_shuf[batch:batch+batch_size]
                 if self.use_bias :
                     y_prob = self.__sigmoid(np.dot(X_batch, w) + b)
+                    
                     dw, db = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w, b = self.__update(w= w, dw= dw, b= b, db= db)
+                    
                     loss = self.__logloss(y_batch, y_prob, self.epsilon)
                     losses.append(loss)
+ 
+                    if data_val is not None:
+                        val_prob = self.__sigmoid(np.dot(X_val, w) + b)
+                        val_loss = self.__logloss(y_val, val_prob, self.epsilon)
+                        val_losses.append(val_loss)
+                    
                 else : 
                     y_prob = self.__sigmoid(np.dot(X_batch, w)) # feedforward
+                    
                     dw = self.__gradientDescent(X_batch, y_batch, y_prob)
-                    w = self.__update(w = w, dw= dw)
+                    w = self.__update(w= w, dw= dw)
+                    
                     loss = self.__logloss(y_batch, y_prob, self.epsilon)
                     losses.append(loss)
+
+                    if data_val is not None :
+                        val_prob = self.__sigmoid(np.dot(X_val, w))
+                        val_loss = self.__logloss(y_val, val_prob, self.epsilon)
+                        val_losses.append(val_loss)                   
+ 
         self.w, self.b = w, b
-        self.loss_hist = np.array(losses)
+        self.loss_hist, self.val_loss_hist = np.array(losses), np.array(val_losses)
         
     def predict(self, X):
         assert X.shape[1] == len(self.w), "Different shape with fitted data !"
@@ -193,12 +217,20 @@ class SoftmaxRegression :
         self.use_bias = use_bias
         self.init = init.lower()
         
-    def fit(self, X, y, batch_size = 32):
+    def fit(self, X, y, batch_size = 32, data_val : tuple = None):
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data."
         assert len(X) == len(y), f"Feature size {len(X)} has different size with label size len(y)"
+        if data_val is not None :
+            assert len(data_val) == 2, "Validation data is only for feature and size !"
+            X_val, y_val = data_val
+            X_val, y_val = np.array(X_val), np.array(y_val)
+            assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while Train feature has {X.shape[1]} "
+        
         y_ohe = self.__OneHot(y)
         losses = []
+        val_losses = []
+        
         N, m = X.shape
         if self.init == "normal":
             w = np.random.normal(0, 0.05, size=(m, y_ohe.shape[1]))
@@ -212,6 +244,7 @@ class SoftmaxRegression :
         for _ in range(self.steps):
             perm = np.random.permutation(N)
             X_perm, y_perm, y_perm_ohe = X[perm], y[perm], y_ohe[perm]
+            
             for batch in range(0, N, batch_size):
                 X_batch, y_batch, y_ohe_batch = X_perm[batch:batch+batch_size], y_perm[batch:batch+batch_size], y_perm_ohe[batch:batch+batch_size]
                 if self.use_bias :
@@ -220,17 +253,27 @@ class SoftmaxRegression :
                     w, b = self.__update(w, dw, b, db)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
+                    
+                    if data_val is not None :
+                        val_prob = self.__softmax(np.dot(X_val, w) + b)
+                        val_loss = self.__categoryLogLoss(y_val, val_prob)
+                        val_losses.append(val_loss)
                      
                 else :
-                    z = self.__softmax(np.dot(X_batch, w))
+                    y_prob = self.__softmax(np.dot(X_batch, w))
                     dw = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
                     w = self.__update(w, dw)
-                    loss = SoftmaxRegression.categoryLogLoss(y_batch, y_prob)
+                    loss = self.__categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
+ 
+                    if data_val is not None :
+                        val_prob = self.__softmax(np.dot(X_val, w))
+                        val_loss = self.__categoryLogLoss(y_val, val_prob)
+                        val_losses.append(val_loss)
 
         self.w, self.b = w, b
         self.m = m
-        self.loss_hist = np.array(losses)
+        self.loss_hist, self.val_loss_hist = np.array(losses), np.array(val_losses)
         
     def predict(self, X):
         X = np.array(X)
@@ -264,9 +307,10 @@ class SoftmaxRegression :
         return exp_z / exp_z.sum()
     
     def __OneHot(self, y):
-        y_ohe = np.zeros((len(y), len(np.unique(y))))
+        num_classes = len(np.unique(y))
+        y_ohe = np.zeros((len(y), num_classes))
         y_ohe[np.arange(len(y)), y] = 1
-        return y_ohe
+        return y_ohe 
     
     def __categoryLogLoss(self, y_true, y_pred):
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]))
