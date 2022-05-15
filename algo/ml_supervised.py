@@ -139,7 +139,7 @@ class LogisticRegression :
                 else : 
                     y_prob = self.__sigmoid(np.dot(X_batch, w)) # feedforward
                     dw = self.__gradientDescent(X_batch, y_batch, y_prob)
-                    w = w - self.lr * dw
+                    w = self.__update(w = w, dw= dw)
                     loss = self.__logloss(y_batch, y_prob, self.epsilon)
                     losses.append(loss)
         self.w, self.b = w, b
@@ -162,11 +162,15 @@ class LogisticRegression :
             dw = (1 / len(X) * np.dot(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             return dw
     
-    def __update(self, w, dw , b, db):
-        w = w - self.lr * dw
-        b = b - self.lr * db
-        return w, b
-        
+    def __update(self, w, dw , b = None, db = None):
+        if self.use_bias :
+            w = w - self.lr * dw
+            b = b - self.lr * db
+            return w, b
+        else : 
+            w = w - self.lr * dw
+            return w
+
     def __sigmoid(self, z):
         return 1 / ( 1 + np.exp(-z))
         
@@ -213,19 +217,19 @@ class SoftmaxRegression :
                 if self.use_bias :
                     y_prob = self.__softmax(np.dot(X_batch, w)) + b
                     dw, db = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
-                    w = w - self.lr * dw
-                    b = b - self.lr * db
+                    w, b = self.__update(w, dw, b, db)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
                      
                 else :
                     z = self.__softmax(np.dot(X_batch, w))
                     dw = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
-                    w -= self.lr * dw
+                    w = self.__update(w, dw)
                     loss = SoftmaxRegression.categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
 
         self.w, self.b = w, b
+        self.m = m
         self.loss_hist = np.array(losses)
         
     def predict(self, X):
@@ -245,6 +249,15 @@ class SoftmaxRegression :
         else : 
             dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true))
             return dw
+
+    def __update(self, w, dw, b = None, db = None):
+        if self.use_bias:
+            w = w - self.lr * dw
+            b = b - self.lr * db
+            return w, b
+        else :
+            w = w - self.lr * dw
+            return w
         
     def __softmax(self, z):
         exp_z = np.exp(z)
