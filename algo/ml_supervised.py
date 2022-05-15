@@ -225,7 +225,7 @@ class SoftmaxRegression :
             assert len(data_val) == 2, "Validation data is only for feature and size !"
             X_val, y_val = data_val
             X_val, y_val = np.array(X_val), np.array(y_val)
-            assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while Train feature has {X.shape[1]} "
+            assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while train feature has {X.shape[1]} "
         
         y_ohe = self.__OneHot(y)
         losses = []
