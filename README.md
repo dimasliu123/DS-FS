@@ -37,7 +37,7 @@ knn_pred = knn.predict(sc_test)
 * Softmax Regression
 
 ### Unsupervised Learning : 
-* 
+* Will be updated.
 
 ### Deep Learning : 
 * Will be updated.
