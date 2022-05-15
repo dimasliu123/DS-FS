@@ -69,12 +69,12 @@ class KNearestNeighbor:
                 distance.append(dist)
             distance = np.array(distance)
             nearestNeighbor = np.argsort(distance)[:self.num_k]
-            y_knn = KNearestNeighbor.findMaxVote(self.label, nearestNeighbor)
+            y_knn = self.__findMaxVote(self.label, nearestNeighbor)
             y_hat.append(y_knn)
         return np.array(y_hat)
 
     @staticmethod
-    def euclideanDistance(p, q):
+    def __euclideanDistance(p, q):
         dist = 0
         for i in range(len(p)):
             dist += ((p[i] - q[i]))  ** 2
@@ -87,8 +87,7 @@ class KNearestNeighbor:
             dist += np.abs((p[i] - q[i]))
         return dist
  
-    @staticmethod
-    def findMaxVote(y, neighbor):
+    def __findMaxVote(y, neighbor):
         from collections import Counter
         vote = Counter(y[neighbor])
         return vote.most_common()[0][0]
@@ -134,8 +133,7 @@ class LogisticRegression :
                 if self.use_bias :
                     y_prob = self.__sigmoid(np.dot(X_batch, w) + b)
                     dw, db = self.__gradientDescent(X_batch, y_batch, y_prob)
-                    w = w - self.lr * dw
-                    b = b - self.lr * db
+                    w, b = self.__update(w= w, dw= dw, b= b, db= db)
                     loss = self.__logloss(y_batch, y_prob, self.epsilon)
                     losses.append(loss)
                 else : 
@@ -161,8 +159,13 @@ class LogisticRegression :
             db = (1 / len(X) * np.sum(y_hat - y_true)) # Calculate Gradient Descent for the bias
             return dw, db
         else :
-            dw = (1 / len(X) * np.dot(X.T, (y_hat - y_true)))
+            dw = (1 / len(X) * np.dot(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             return dw
+    
+    def __update(self, w, dw , b, db):
+        w = w - self.lr * dw
+        b = b - self.lr * db
+        return w, b
         
     def __sigmoid(self, z):
         return 1 / ( 1 + np.exp(-z))
@@ -236,8 +239,8 @@ class SoftmaxRegression :
     
     def __gradientDescent(self, X, y_true, y_hat):
         if self.use_bias : 
-            dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true))
-            db =  (1 / len(X)) * np.sum(y_hat - y_true)
+            dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true)) # Calculate gradient descent for the weights
+            db =  (1 / len(X)) * np.sum(y_hat - y_true) # Calculate gradient descent for the bias
             return dw, db
         else : 
             dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true))
@@ -280,5 +283,3 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
         for i in range(X1):
             dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
-
-
