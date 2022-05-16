@@ -151,7 +151,7 @@ class LogisticRegression :
             for batch in range(0, N, batch_size):
                 X_batch, y_batch = X_shuf[batch:batch+batch_size], y_shuf[batch:batch+batch_size]
                 if self.use_bias :
-                    y_prob = self.__sigmoid(np.dot(X_batch, w) + b)
+                    y_prob = self.__sigmoid(np.matmul(X_batch, w) + b)
                     
                     dw, db = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w, b = self.__update(w= w, dw= dw, b= b, db= db)
@@ -160,12 +160,12 @@ class LogisticRegression :
                     losses.append(loss)
  
                     if data_val is not None:
-                        val_prob = self.__sigmoid(np.dot(X_val, w) + b)
+                        val_prob = self.__sigmoid(np.matmul(X_val, w) + b)
                         val_loss = self.__logloss(y_val, val_prob, self.epsilon)
                         val_losses.append(val_loss)
                     
                 else : 
-                    y_prob = self.__sigmoid(np.dot(X_batch, w)) # feedforward
+                    y_prob = self.__sigmoid(np.matmul(X_batch, w)) # feedforward
                     
                     dw = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w = self.__update(w= w, dw= dw)
@@ -174,7 +174,7 @@ class LogisticRegression :
                     losses.append(loss)
 
                     if data_val is not None :
-                        val_prob = self.__sigmoid(np.dot(X_val, w))
+                        val_prob = self.__sigmoid(np.matmul(X_val, w))
                         val_loss = self.__logloss(y_val, val_prob, self.epsilon)
                         val_losses.append(val_loss)                   
  
@@ -187,18 +187,18 @@ class LogisticRegression :
     def predict(self, X):
         assert X.shape[1] == len(self.w), f"Different shape {X.shape[1]} with fitted data {len(self.w)}!"
         if self.use_bias :
-            z = self.__sigmoid(np.dot(X, self.w) + self.b )
+            z = self.__sigmoid(np.matmul(X, self.w) + self.b )
         else : 
-            z = self.__sigmoid(np.dot(X, self.w))
+            z = self.__sigmoid(np.matmul(X, self.w))
         return np.array([1 if i > self.threshold else 0 for i in z])
     
     def __gradientDescent(self, X, y_true, y_hat):
         if self.use_bias : 
-            dw = (1 / len(X) * np.dot(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
+            dw = (1 / len(X) * np.matmul(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             db = (1 / len(X) * np.sum(y_hat - y_true)) # Calculate Gradient Descent for the bias
             return dw, db
         else :
-            dw = (1 / len(X) * np.dot(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
+            dw = (1 / len(X) * np.matmul(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             return dw
     
     def __update(self, w, dw , b = None, db = None):
@@ -263,26 +263,26 @@ class SoftmaxRegression :
             for batch in range(0, N, batch_size):
                 X_batch, y_batch, y_ohe_batch = X_perm[batch:batch+batch_size], y_perm[batch:batch+batch_size], y_perm_ohe[batch:batch+batch_size]
                 if self.use_bias :
-                    y_prob = self.__softmax(np.dot(X_batch, w)) + b
+                    y_prob = self.__softmax(np.matmul(X_batch, w)) + b
                     dw, db = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
                     w, b = self.__update(w, dw, b, db)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
                     
                     if data_val is not None :
-                        val_prob = self.__softmax(np.dot(X_val, w) + b)
+                        val_prob = self.__softmax(np.matmul(X_val, w) + b)
                         val_loss = self.__categoryLogLoss(y_val, val_prob)
                         val_losses.append(val_loss)
                      
                 else :
-                    y_prob = self.__softmax(np.dot(X_batch, w))
+                    y_prob = self.__softmax(np.matmul(X_batch, w))
                     dw = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
                     w = self.__update(w, dw)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
                     losses.append(loss)
  
                     if data_val is not None :
-                        val_prob = self.__softmax(np.dot(X_val, w))
+                        val_prob = self.__softmax(np.matmul(X_val, w))
                         val_loss = self.__categoryLogLoss(y_val, val_prob)
                         val_losses.append(val_loss)
 
@@ -294,18 +294,18 @@ class SoftmaxRegression :
         X = np.array(X)
         assert X.shape[1] == self.m, f"{X.shape[1]} has not the same shape as fit !"
         if self.use_bias : 
-            z = self.__softmax(np.dot(X, self.w))
+            z = self.__softmax(np.matmul(X, self.w))
         else :
-            z = self.__softmax(np.dot(X, self.w))
+            z = self.__softmax(np.matmul(X, self.w))
         return np.argmax(z, axis=-1)
     
     def __gradientDescent(self, X, y_true, y_hat):
         if self.use_bias : 
-            dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true)) # Calculate gradient descent for the weights
+            dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true)) # Calculate gradient descent for the weights
             db =  (1 / len(X)) * np.sum(y_hat - y_true) # Calculate gradient descent for the bias
             return dw, db
         else : 
-            dw = (1 / len(X)) * np.dot(X.T, (y_hat - y_true))
+            dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true))
             return dw
 
     def __update(self, w, dw, b = None, db = None):
@@ -352,6 +352,3 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
             dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
 
-class SVM :
-    def __init__(self, ):
-        pass
