@@ -53,4 +53,4 @@ class Flatten:
 
     def backward(self):
         # np.reshape(inputs, newshape=(self.inNodes, self.outNodes))
-
+        pass

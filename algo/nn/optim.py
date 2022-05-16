@@ -1,6 +1,6 @@
 import numpy as np
 
-class Otimizer :
+class Optimizer :
     def __init__(self, lr : float):
         self.lr = lr 
 

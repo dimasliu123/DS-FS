@@ -5,11 +5,7 @@ np.random.seed(2022)
 class NaiveBayes:
     def __init__(self):
         pass
-    
-    def predict(self, X):
-        y_hat = [self.calcPosterior(x) for x in X]
-        return np.argmax(np.array(y_hat), axis=-1)
-    
+
     def fit(self, X, y):
         n_samples, n_feat = X.shape
         n_classes = len(np.unique(y))
@@ -27,6 +23,10 @@ class NaiveBayes:
         self.sigma = sigma
         self.prior = prior
         self.n_classes = n_classes
+
+    def predict(self, X):
+        y_hat = [self.calcPosterior(x) for x in X]
+        return np.argmax(np.array(y_hat), axis=-1)
 
     def GaussianPDF(self, X, mu, sigma):
         gauss = 1 / np.sqrt(sigma * 2 * np.pi)
@@ -53,6 +53,8 @@ class KNearestNeighbor:
         self.mode = mode.lower()
         
     def fit(self, X, y):
+        X, y = np.array(X), np.array(y)
+        assert len(X) == len(y), f"Feature has {len(X)} while label has {len(y)}."
         n_label = len(np.unique(y))
         self.n_samples, self.n_features = X.shape
         self.feature, self.label = X, y
@@ -74,7 +76,7 @@ class KNearestNeighbor:
         return np.array(y_hat)
 
     @staticmethod
-    def __euclideanDistance(p, q):
+    def euclideanDistance(p, q):
         dist = 0
         for i in range(len(p)):
             dist += ((p[i] - q[i]))  ** 2
@@ -87,7 +89,7 @@ class KNearestNeighbor:
             dist += np.abs((p[i] - q[i]))
         return dist
  
-    def __findMaxVote(y, neighbor):
+    def __findMaxVote(self, y, neighbor):
         from collections import Counter
         vote = Counter(y[neighbor])
         return vote.most_common()[0][0]
@@ -120,14 +122,24 @@ class LogisticRegression :
             assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while Train feature has {X.shape[1]} "
             assert len(np.unique(y_val)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
         N, m = X.shape
-        if self.init == "normal":
-            w = np.random.normal(loc=0., scale=0.05, size=m)
-            b = np.random.normal(loc=0., scale=0.05, size=1)
-        elif self.init == "uniform":
-            w = np.random.uniform(low=-0.05, high=0.05, size=m)
-            b = np.random.uniform(low=-0.05, high=0.05, size=1)
+        if self.use_bias : 
+            if self.init == "normal":
+                w = np.random.normal(loc=0., scale=0.05, size=m)
+                b = np.random.normal(loc=0., scale=0.05, size=1)
+            elif self.init == "uniform":
+                w = np.random.uniform(low=-0.05, high=0.05, size=m)
+                b = np.random.uniform(low=-0.05, high=0.05, size=1)
+            else :
+                raise ValueError("Weights initializer is not valid. Use uniform or normal.")
+        
         else :
-            raise ValueError("Weights initializer is not valid. Use uniform or normal.")
+            if self.init == "normal":
+                w = np.random.normal(loc=0., scale=0.05, size=m)
+            elif self.init == "uniform":
+                w = np.random.uniform(low=-0.05, high=0.05, size=m)
+            else :
+                raise ValueError("Weights initializer is not valid. Use uniform or normal.")
+
         assert len(X) == len(y), f"Feature size {len(X)} has not the same as label size {len(y)}"            
         losses = []
         val_losses = []
@@ -166,11 +178,14 @@ class LogisticRegression :
                         val_loss = self.__logloss(y_val, val_prob, self.epsilon)
                         val_losses.append(val_loss)                   
  
-        self.w, self.b = w, b
         self.loss_hist, self.val_loss_hist = np.array(losses), np.array(val_losses)
+        if self.use_bias :
+            self.w, self.b = w, b
+        else : 
+            self.w = w
         
     def predict(self, X):
-        assert X.shape[1] == len(self.w), "Different shape with fitted data !"
+        assert X.shape[1] == len(self.w), f"Different shape {X.shape[1]} with fitted data {len(self.w)}!"
         if self.use_bias :
             z = self.__sigmoid(np.dot(X, self.w) + self.b )
         else : 
@@ -315,10 +330,6 @@ class SoftmaxRegression :
     def __categoryLogLoss(self, y_true, y_pred):
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]))
 
-class DecisionTree: 
-    def __init__(self):
-        pass
-
 # Learning Vector Quantization
 class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
     def __init__(self, lr :float = 0.01, epochs : int = 100): # measuring similarity : || xi - wi || comp neural network
@@ -340,3 +351,7 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
         for i in range(X1):
             dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
+
+class SVM :
+    def __init__(self, ):
+        pass

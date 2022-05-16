@@ -58,6 +58,6 @@ class OneHot:
         self.numCategory = len(np.unique(X))
     
     def scale(self, X):
-        zeros = np.zeros((len(X), self.numCategory))
-        zeros[np.arange(len(X)), X] = 1
-        return zeros
+        one_hot = np.zeros((len(X), self.numCategory))
+        one_hot[np.arange(len(X)), X] = 1
+        return one_hot 
