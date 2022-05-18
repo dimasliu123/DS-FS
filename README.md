@@ -4,8 +4,6 @@
 
 ## Purpose : 
 * The purpose of this project is to create a better intuition on the algorithm.
-* Understand the intuition and the importance of scaling, and how each algorithm perform with different scaling.
-* Understand the intuition of Distance measurement on real-world applications.
 
 ### Implementation example : 
 ``` Python
@@ -42,5 +40,3 @@ knn_pred = knn.predict(sc_test)
 ### Deep Learning : 
 * Will be updated.
 
-### TODO :
-* Connect each layer into a model, e.g : (on tensorflow/keras : tf.keras.Model, on pytorch : torch.nn.Module) 
