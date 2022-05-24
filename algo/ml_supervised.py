@@ -1,8 +1,9 @@
+from collections import Counter
 import numpy as np
 np.random.seed(2022)
 
 # Naive Bayes 
-class NaiveBayes:
+class GaussianNB:
     def __init__(self):
         pass
 
@@ -25,21 +26,21 @@ class NaiveBayes:
         self.n_classes = n_classes
 
     def predict(self, X):
-        y_hat = [self.calcPosterior(x) for x in X]
+        y_hat = [self.__calcPosterior(x) for x in X]
         return np.argmax(np.array(y_hat), axis=-1)
 
-    def GaussianPDF(self, X, mu, sigma):
+    def __gaussianPDF(self, X, mu, sigma):
         gauss = 1 / np.sqrt(sigma * 2 * np.pi)
         prob = np.exp(-0.5 * ((X - mu) ** 2 / sigma))
         return gauss * prob
  
-    def calcPosterior(self, X): # posterior
+    def __calcPosterior(self, X): # posterior
         posteriors = []
         for c in range(self.n_classes):
             mu = self.mu[c]
             sigma = self.sigma[c]
             prior = np.log(self.prior[c])
-            posterior = np.log(self.GaussianPDF(X, mu, sigma)).sum()
+            posterior = np.log(self.__gaussianPDF(X, mu, sigma)).sum()
             posterior = prior + posterior
             posteriors.append(posterior)
         return posteriors
@@ -60,6 +61,7 @@ class KNearestNeighbor:
         self.feature, self.label = X, y
 
     def predict(self, X_test):
+        assert X_test.shape[1] == self.feature.shape[1], f"Fitted feature has different size as predicted."
         y_hat = []
         for i in X_test :
             distance = []
@@ -90,7 +92,6 @@ class KNearestNeighbor:
         return dist
  
     def __findMaxVote(self, y, neighbor):
-        from collections import Counter
         vote = Counter(y[neighbor])
         return vote.most_common()[0][0]
 

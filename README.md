@@ -9,6 +9,7 @@
 ``` Python
 from algo.preprocess import Standardize
 from algo.ml_supervised import KNearestNeighbor
+
 sc = Standardize()
 sc.calc(X_train)
 sc_train = sc.scale(X_train)
