@@ -6,11 +6,13 @@ class Loss :
         self.y_pred = y_pred
 
 class BinaryCrossEntropy(Loss):
-    def __init__(self, clipvalue : float = None):
+    def __init__(self, epsilon : float = 1e-7):
         super().__init(y_true, y_pred)
-        self.clipvalue = clipvalue
+        self.epsilon = epsilon 
+        self.y_true = y_true
+        self.y_pred = y_pred
 
-    def calculate_loss(self):
+    def calc_loss(self):
         if self.clipvalue is not None:
             y_pred = np.clip(self.y_pred, a_min=self.clipvalue, a_max = 1 - self.clipvalue)
             nota1 = self.y_true * np.log(y_pred + self.clipvalue)
