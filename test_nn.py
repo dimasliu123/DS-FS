@@ -3,7 +3,7 @@ from sklearn.datasets import load_breast_cancer
 from algo.preprocess import OneHot, MinMax
 from algo.nn import activation as F
 from algo.nn.loss import BinaryCrossEntropy
-from algo.nn.layers import Linear
+from algo.nn.neur_nets import NeuralNets
 
 # Preprocess
 def load_data():
@@ -21,24 +21,10 @@ def split_data(X, y, test_size, shuffle=True):
     y_train, y_test = y[sizes:], y[:sizes]
     return X_train, X_test, y_train, y_test
 
-class Model:
-    def __init__(self):
-        self.x1 = Linear(30, 32)
-        self.x2 = Linear(32, 16)
-        self.x3 = Linear(16, 2)
-
-    def forward(self, inputs):
-        x = F.relu(self.x1(inputs))
-        x = F.relu(self.x2(x))
-        return F.sigmoid(self.x3(x))
-
-    def backward(self):
-        pass
-
 def main():
     bce = BinaryCrossEntropy()
     X, y = load_data()
-    X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.20, shuffle=True)
+    X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.10, shuffle=True)
 
     sc = MinMax()
     ohe = OneHot()
@@ -50,7 +36,7 @@ def main():
     ohe_train = ohe.scale(y_train)
     ohe_val = ohe.scale(y_test)
 
-    model = Model()
+    model = NeuralNets()
     y_hat = model.forward(sc_train)
     loss = bce(ohe_train, y_hat)
     print(loss)

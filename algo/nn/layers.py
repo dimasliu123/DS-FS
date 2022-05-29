@@ -1,17 +1,30 @@
-from collections import defaultdict
 import numpy as np
 
-class Tensor(object):
-    def __init__(self):
-        pass
+class Tensor:
+    def __set_name():
+        raise NotImplementedError()
 
-class Linear :
-    def __init__(self, inNodes : int = None,  outNodes : int = None,  use_bias : bool = True,  init : str = "normal", dtype=np.float32):
+    def __initialize():
+        raise NotImplementedError()
+
+    def __call__():
+        raise NotImplementedError()
+
+    def backward():
+        raise NotImplementedError()
+
+    def __make_dict():
+        raise NotImplementedError()
+
+class Linear(Tensor) :
+    def __init__(self, inNodes : int = None,  outNodes : int = None,  use_bias : bool = True,  init : str = "normal", dtype=np.float32, name: str = None):
         self.inNodes = inNodes
-        self.dtype = dtype
         self.outNodes = outNodes
         self.use_bias = use_bias
         self.init = init.lower()
+        self.dtype = dtype
+        self.name = name
+
         self.params = {}
         self.__initialize()
         self.__set_name()
@@ -26,7 +39,10 @@ class Linear :
         return self.z
 
     def __set_name(self):
-        self.name = f"linear_{self.outNodes}"
+        if self.name is None:
+            self.name = f"linear_{self.outNodes}"
+        else :
+            self.name = name
 
     def __initialize(self):
         if self.use_bias : 
@@ -72,7 +88,7 @@ class Linear :
             param = { self.name : { "W" : self.w } }
             self.params.update(param)
 
-class Flatten:
+class Flatten(Tensor):
     def __init__(self, inNodes : int, outNodes : int): # COMMAND : input nodes and output nodes is later used for backpropagation
         self.inNodes = inNodes
         self.outNodes = outNodes

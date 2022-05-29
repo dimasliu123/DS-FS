@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer
 from algo.preprocess import Standardize
-from algo.ml_supervised import KNearestNeighbor, NaiveBayes, LogisticRegression 
+from algo.ml_supervised import KNearestNeighbor, GaussianNB, LogisticRegression, SoftmaxRegression
 
 def accuracy(y_true, y_pred):
     return np.sum(y_true == y_pred) / len(y_true) * 100
@@ -40,21 +40,41 @@ if __name__ == "__main__":
     knn = KNearestNeighbor()
     knn.fit(sc_train, y_train)
 
-    nb = NaiveBayes()
+    nb = GaussianNB()
     nb.fit(sc_train, y_train)
 
     lr = LogisticRegression()
+    print("Logistic Regression :")
     lr.fit(sc_train, y_train)
+    print( len(lr.loss_hist), len(lr.val_loss_hist) )
 
     lr_no_b = LogisticRegression(use_bias=False)
+    print("Logistic Regression with no bias : ")
     lr_no_b.fit(sc_train, y_train)
+    print( len(lr_no_b.loss_hist), len(lr_no_b.val_loss_hist) )
+
+    sr = SoftmaxRegression()
+    print("Softmax Regression :")
+    sr.fit(sc_train, y_train)
+    print( len(sr.loss_hist), len(sr.val_loss_hist) )
+
+    sr_no_b = SoftmaxRegression(use_bias=False)
+    print("Softmax Regression with no bias :")
+    sr_no_b.fit(sc_train, y_train)
+    print( len(sr_no_b.loss_hist), len(sr_no_b.val_loss_hist) )
 
     nb_pred = nb.predict(sc_test)
     knn_pred = knn.predict(sc_test)
+
     lr_no_b_pred = lr_no_b.predict(sc_test)
     lr_pred = lr.predict(sc_test)
+
+    sr_no_b_pred = sr_no_b.predict(sc_test)
+    sr_pred = sr.predict(sc_test)
 
     print("NB Accuracy : ", accuracy(y_test, nb_pred))
     print("KNN Accuracy : ", accuracy(y_test, knn_pred))
     print("LR with no bias Acc : ", accuracy(y_test, lr_no_b_pred))
     print("LR with bias Acc : ", accuracy(y_test, lr_pred))
+    print("SR with no bias Acc : ", accuracy(y_test, sr_no_b_pred))
+    print("SR with bias Acc : ", accuracy(y_test, sr_pred))

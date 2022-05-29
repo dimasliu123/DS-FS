@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from collections import Counter
 import numpy as np
 np.random.seed(2022)
@@ -116,28 +117,31 @@ class LogisticRegression :
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
+
         if data_val is not None :
             assert len(data_val) == 2, "Validation data is only for feature and size !"
             X_val, y_val = data_val
             X_val, y_val = np.array(X_val), np.array(y_val)
             assert X_val.shape[1] == X.shape[1], f"Validation feature {data_val[0].shape[1]} has different column size while Train feature has {X.shape[1]} "
             assert len(np.unique(y_val)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
+
         N, m = X.shape
+
         if self.use_bias : 
             if self.init == "normal":
-                w = np.random.normal(loc=0., scale=0.05, size=m)
-                b = np.random.normal(loc=0., scale=0.05, size=1)
+                w = np.random.normal(loc=0., scale=0.05, size=m) * 0.1
+                b = np.random.normal(loc=0., scale=0.05, size=1) * 0.1
             elif self.init == "uniform":
-                w = np.random.uniform(low=-0.05, high=0.05, size=m)
-                b = np.random.uniform(low=-0.05, high=0.05, size=1)
+                w = np.random.uniform(low=-0.05, high=0.05, size=m) * 0.1
+                b = np.random.uniform(low=-0.05, high=0.05, size=1) * 0.1
             else :
                 raise ValueError("Weights initializer is not valid. Use uniform or normal.")
         
         else :
             if self.init == "normal":
-                w = np.random.normal(loc=0., scale=0.05, size=m)
+                w = np.random.normal(loc=0., scale=0.05, size=m) * 0.1
             elif self.init == "uniform":
-                w = np.random.uniform(low=-0.05, high=0.05, size=m)
+                w = np.random.uniform(low=-0.05, high=0.05, size=m) * 0.1
             else :
                 raise ValueError("Weights initializer is not valid. Use uniform or normal.")
 
@@ -145,7 +149,7 @@ class LogisticRegression :
         losses = []
         val_losses = []
         
-        for _ in range(self.steps):
+        for i in ( t:= tqdm(range(self.steps) )):
             perm = np.random.permutation(N)
             X_shuf, y_shuf = X[perm], y[perm]           
             
@@ -153,33 +157,46 @@ class LogisticRegression :
                 X_batch, y_batch = X_shuf[batch:batch+batch_size], y_shuf[batch:batch+batch_size]
                 if self.use_bias :
                     y_prob = self.__sigmoid(np.matmul(X_batch, w) + b)
-                    
                     dw, db = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w, b = self.__update(w= w, dw= dw, b= b, db= db)
-                    
-                    loss = self.__logloss(y_batch, y_prob, self.epsilon)
-                    losses.append(loss)
- 
+                    loss = self.__logloss(y_batch, y_prob)
+
+                    t.set_description(f"Loss : {loss}")
+
+                    if i % batch_size == 0 :
+                        losses.append(loss)
+
                     if data_val is not None:
                         val_prob = self.__sigmoid(np.matmul(X_val, w) + b)
-                        val_loss = self.__logloss(y_val, val_prob, self.epsilon)
-                        val_losses.append(val_loss)
-                    
+                        val_loss = self.__logloss(y_val, val_prob)
+
+                        t.set_description(f"Loss : {loss} | Val Loss : {val_loss}")
+
+                        if i % batch_size == 0:
+                            val_losses.append(val_loss)
+
                 else : 
                     y_prob = self.__sigmoid(np.matmul(X_batch, w)) # feedforward
                     
                     dw = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w = self.__update(w= w, dw= dw)
                     
-                    loss = self.__logloss(y_batch, y_prob, self.epsilon)
+                    loss = self.__logloss(y_batch, y_prob)
                     losses.append(loss)
+
+                    t.set_description(f"Loss : {loss}")
 
                     if data_val is not None :
                         val_prob = self.__sigmoid(np.matmul(X_val, w))
-                        val_loss = self.__logloss(y_val, val_prob, self.epsilon)
-                        val_losses.append(val_loss)                   
+                        val_loss = self.__logloss(y_val, val_prob)
+
+                        t.set_description(f"Loss : {loss} | Val Loss : {val_loss}")
+
+                        if i % batch_size == 0:
+                            val_losses.append(val_loss)
  
         self.loss_hist, self.val_loss_hist = np.array(losses), np.array(val_losses)
+
         if self.use_bias :
             self.w, self.b = w, b
         else : 
@@ -211,27 +228,29 @@ class LogisticRegression :
             w = w - self.lr * dw
             return w
 
-    def __sigmoid(self, z):
+    def __sigmoid(self, z): # sigmoid f(x) = 1 / ( 1 + e^-x)
         return 1 / ( 1 + np.exp(-z))
         
-    def __logloss(self, y_true, y_pred, epsilon):
-        y_pred = np.clip(y_pred, a_min = epsilon, a_max = 1 - epsilon)
-        notation1 = y_true * np.log(y_pred + epsilon)
-        notation2 = ( 1 - y_true) * np.log(1 - y_pred + epsilon)
+    def __logloss(self, y_true, y_pred):
+        y_pred = np.clip(y_pred, a_min = self.epsilon, a_max = 1 - self.epsilon)
+        notation1 = y_true * np.log(y_pred + self.epsilon)
+        notation2 = ( 1 - y_true) * np.log(1 - y_pred + self.epsilon)
         notation = notation1 + notation2
         return - np.mean(notation)
 
 # Softmax Regression
 class SoftmaxRegression :
     def __init__(self, 
-                 steps : int = 300, 
+                 steps : int = 800, 
                  lr : float = 0.01,
                  use_bias : bool = True,
-                 init : str = "normal"):
+                 init : str = "normal",
+                 epsilon : float = 1e-8):
         self.steps = steps
         self.lr = lr
         self.use_bias = use_bias
         self.init = init.lower()
+        self.epsilon = epsilon
         
     def fit(self, X, y, batch_size = 32, data_val : tuple = None):
         X, y = np.array(X), np.array(y)
@@ -257,35 +276,52 @@ class SoftmaxRegression :
         else :
             raise ValueError("Weights initializer is not valid.. Use normal or uniform.")
         
-        for _ in range(self.steps):
+        for i in ( t := tqdm(range(self.steps) ) ):
             perm = np.random.permutation(N)
             X_perm, y_perm, y_perm_ohe = X[perm], y[perm], y_ohe[perm]
             
             for batch in range(0, N, batch_size):
                 X_batch, y_batch, y_ohe_batch = X_perm[batch:batch+batch_size], y_perm[batch:batch+batch_size], y_perm_ohe[batch:batch+batch_size]
+
                 if self.use_bias :
                     y_prob = self.__softmax(np.matmul(X_batch, w)) + b
                     dw, db = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
                     w, b = self.__update(w, dw, b, db)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
-                    losses.append(loss)
+
+                    t.set_description(f"Loss : {loss}")
+
+                    if i % batch_size == 0 :
+                        losses.append(loss)
                     
                     if data_val is not None :
                         val_prob = self.__softmax(np.matmul(X_val, w) + b)
                         val_loss = self.__categoryLogLoss(y_val, val_prob)
-                        val_losses.append(val_loss)
-                     
+
+                        t.set_description(f"Loss : {loss} | Val Loss : {val_loss}")
+
+                        if i % batch_size == 0 :
+                            val_losses.append(val_loss)
+
                 else :
                     y_prob = self.__softmax(np.matmul(X_batch, w))
                     dw = self.__gradientDescent(X_batch, y_ohe_batch, y_prob)
                     w = self.__update(w, dw)
                     loss = self.__categoryLogLoss(y_batch, y_prob)
-                    losses.append(loss)
- 
+
+                    t.set_description(f"Loss : {loss}")
+
+                    if i % batch_size == 0 :
+                        losses.append(loss)
+
                     if data_val is not None :
                         val_prob = self.__softmax(np.matmul(X_val, w))
                         val_loss = self.__categoryLogLoss(y_val, val_prob)
-                        val_losses.append(val_loss)
+
+                        t.set_description(f"Loss : {loss} | Val Loss : {val_loss}")
+
+                        if i % batch_size == 0:
+                            val_losses.append(val_loss)
 
         self.w, self.b = w, b
         self.m = m
@@ -328,8 +364,9 @@ class SoftmaxRegression :
         y_ohe[np.arange(len(y)), y] = 1
         return y_ohe 
     
-    def __categoryLogLoss(self, y_true, y_pred):
-        return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]))
+    def __categoryLogLoss(self, y_true, y_pred): # TODO : Fix gradient clipping on Softmax Regression
+        y_pred = np.clip(y_pred, a_min = self.epsilon, a_max = 1 - self.epsilon)
+        return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]) + self.epsilon)
 
 # Learning Vector Quantization
 class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch/max_epoch)) 
