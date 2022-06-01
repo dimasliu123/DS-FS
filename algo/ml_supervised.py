@@ -99,12 +99,13 @@ class KNearestNeighbor:
 # Logistic Regression
 class LogisticRegression :
     def __init__(self, 
-                 steps : int = 300, 
+                 steps : int = 400, 
                  epsilon : float = 1e-6,
                  lr : float = 0.01,
                  threshold : float = 0.5,
                  use_bias : bool = True,
                  init : str = "normal"):
+
         self.use_bias = use_bias
         self.steps = steps
         self.epsilon = epsilon
@@ -113,7 +114,7 @@ class LogisticRegression :
         assert threshold < 1.0 and threshold > 0.0, f"Threshold has to be between 0 and 1 !"
         self.threshold = threshold
     
-    def fit(self, X, y, batch_size=32, data_val : tuple = None):
+    def fit(self, X, y, batch_size = 32, data_val : tuple = None):
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
@@ -146,6 +147,7 @@ class LogisticRegression :
                 raise ValueError("Weights initializer is not valid. Use uniform or normal.")
 
         assert len(X) == len(y), f"Feature size {len(X)} has not the same as label size {len(y)}"            
+
         losses = []
         val_losses = []
         
@@ -155,6 +157,7 @@ class LogisticRegression :
             
             for batch in range(0, N, batch_size):
                 X_batch, y_batch = X_shuf[batch:batch+batch_size], y_shuf[batch:batch+batch_size]
+
                 if self.use_bias :
                     y_prob = self.__sigmoid(np.matmul(X_batch, w) + b)
                     dw, db = self.__gradientDescent(X_batch, y_batch, y_prob)
@@ -177,14 +180,14 @@ class LogisticRegression :
 
                 else : 
                     y_prob = self.__sigmoid(np.matmul(X_batch, w)) # feedforward
-                    
                     dw = self.__gradientDescent(X_batch, y_batch, y_prob)
                     w = self.__update(w= w, dw= dw)
-                    
                     loss = self.__logloss(y_batch, y_prob)
-                    losses.append(loss)
 
                     t.set_description(f"Loss : {loss}")
+
+                    if i % batch_size == 0:
+                        losses.append(loss)
 
                     if data_val is not None :
                         val_prob = self.__sigmoid(np.matmul(X_val, w))
@@ -204,10 +207,12 @@ class LogisticRegression :
         
     def predict(self, X):
         assert X.shape[1] == len(self.w), f"Different shape {X.shape[1]} with fitted data {len(self.w)}!"
+
         if self.use_bias :
             z = self.__sigmoid(np.matmul(X, self.w) + self.b )
         else : 
             z = self.__sigmoid(np.matmul(X, self.w))
+
         return np.array([1 if i > self.threshold else 0 for i in z])
     
     def __gradientDescent(self, X, y_true, y_hat):
@@ -215,6 +220,7 @@ class LogisticRegression :
             dw = (1 / len(X) * np.matmul(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             db = (1 / len(X) * np.sum(y_hat - y_true)) # Calculate Gradient Descent for the bias
             return dw, db
+
         else :
             dw = (1 / len(X) * np.matmul(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             return dw
@@ -236,12 +242,13 @@ class LogisticRegression :
         notation1 = y_true * np.log(y_pred + self.epsilon)
         notation2 = ( 1 - y_true) * np.log(1 - y_pred + self.epsilon)
         notation = notation1 + notation2
+
         return - np.mean(notation)
 
 # Softmax Regression
 class SoftmaxRegression :
     def __init__(self, 
-                 steps : int = 800, 
+                 steps : int = 200, 
                  lr : float = 0.01,
                  use_bias : bool = True,
                  init : str = "normal",
@@ -267,6 +274,7 @@ class SoftmaxRegression :
         val_losses = []
         
         N, m = X.shape
+
         if self.init == "normal":
             w = np.random.normal(0, 0.05, size=(m, y_ohe.shape[1]))
             b = np.random.normal(0, 0.05, size=(y_ohe.shape[1]))
@@ -323,13 +331,19 @@ class SoftmaxRegression :
                         if i % batch_size == 0:
                             val_losses.append(val_loss)
 
-        self.w, self.b = w, b
         self.m = m
         self.loss_hist, self.val_loss_hist = np.array(losses), np.array(val_losses)
+
+        if self.use_bias :
+            self.w, self.b = w, b
+        else : 
+            self.w = w
+
         
     def predict(self, X):
         X = np.array(X)
         assert X.shape[1] == self.m, f"{X.shape[1]} has not the same shape as fit !"
+
         if self.use_bias : 
             z = self.__softmax(np.matmul(X, self.w))
         else :
@@ -341,6 +355,7 @@ class SoftmaxRegression :
             dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true)) # Calculate gradient descent for the weights
             db =  (1 / len(X)) * np.sum(y_hat - y_true) # Calculate gradient descent for the bias
             return dw, db
+
         else : 
             dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true))
             return dw
@@ -350,6 +365,7 @@ class SoftmaxRegression :
             w = w - self.lr * dw
             b = b - self.lr * db
             return w, b
+
         else :
             w = w - self.lr * dw
             return w

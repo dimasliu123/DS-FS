@@ -45,22 +45,22 @@ if __name__ == "__main__":
 
     lr = LogisticRegression()
     print("Logistic Regression :")
-    lr.fit(sc_train, y_train)
+    lr.fit(sc_train, y_train, data_val=(sc_test, y_test))
     print( len(lr.loss_hist), len(lr.val_loss_hist) )
 
     lr_no_b = LogisticRegression(use_bias=False)
     print("Logistic Regression with no bias : ")
-    lr_no_b.fit(sc_train, y_train)
+    lr_no_b.fit(sc_train, y_train, data_val=(sc_test, y_test))
     print( len(lr_no_b.loss_hist), len(lr_no_b.val_loss_hist) )
 
     sr = SoftmaxRegression()
     print("Softmax Regression :")
-    sr.fit(sc_train, y_train)
+    sr.fit(sc_train, y_train, data_val=(sc_test, y_test))
     print( len(sr.loss_hist), len(sr.val_loss_hist) )
 
     sr_no_b = SoftmaxRegression(use_bias=False)
     print("Softmax Regression with no bias :")
-    sr_no_b.fit(sc_train, y_train)
+    sr_no_b.fit(sc_train, y_train, data_val=(sc_test, y_test))
     print( len(sr_no_b.loss_hist), len(sr_no_b.val_loss_hist) )
 
     nb_pred = nb.predict(sc_test)
