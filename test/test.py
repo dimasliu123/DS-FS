@@ -11,12 +11,11 @@ def load_data():
     data = load_breast_cancer()
     return data.data, data.target
 
-def shuffle(X, y):
+def split_data(X, y, test_size):
     assert len(X) == len(y), f"Feature has {len(X)} while label has {len(y)}"
     perm = np.random.permutation(len(X))
-    return X[perm], y[perm]
+    X, y = X[perm], y[perm]
 
-def split_data(X, y, test_size):
     sizes = int(len(X) * test_size)
     X_train, X_test = X[sizes:], X[:sizes]
     y_train, y_test = y[sizes:], y[:sizes]
@@ -26,7 +25,6 @@ def split_data(X, y, test_size):
 # Load ML
 if __name__ == "__main__":
     X, y = load_data()
-    X, y = shuffle(X, y)
     X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.15)
     print(X_train.shape, y_train.shape)
 

@@ -6,6 +6,7 @@
 * The purpose of this project is to create a better intuition on the algorithm.
 
 ### Implementation example : 
+
 ``` Python
 from algo.preprocess import Standardize
 from algo.ml_supervised import KNearestNeighbor
