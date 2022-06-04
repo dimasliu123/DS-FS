@@ -31,12 +31,12 @@ class AdaGrad(Optimizer):
 
     def update():
         if self.use_bias :
-            w_nota = np.dot(self.lr / (dw + self.epsilon), dw)
-            b_nota = np.dot(self.lr / (dw + self.epsilon), db)
+            w_nota = np.matmul(self.lr / (dw + self.epsilon), dw)
+            b_nota = np.matmul(self.lr / (dw + self.epsilon), db)
             w = w - w_nota
             b = b - b_nota 
         else : 
-            w_nota = np.dot(self.lr / (dw + self.epsilon), dw)
+            w_nota = np.matmul(self.lr / (dw + self.epsilon), dw)
             w = w - w_nota 
 
 class AdaDelta(Optimizer):

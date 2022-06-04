@@ -98,3 +98,6 @@ class Flatten(Tensor):
 
     def backward(self):
         self.out = np.reshape(inputs, newshape=(self.inNodes, self.outNodes))
+
+    def __initialize(self):
+        None

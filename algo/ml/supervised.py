@@ -156,7 +156,7 @@ class LogisticRegression :
             X_shuf, y_shuf = X[perm], y[perm]           
             
             for batch in range(0, N, batch_size):
-                X_batch, y_batch = X_shuf[batch:batch+batch_size], y_shuf[batch:batch+batch_size]
+                X_batch, y_batch = X_shuf[ batch : batch + batch_size], y_shuf[ batch : batch + batch_size]
 
                 if self.use_bias :
                     y_prob = self.__sigmoid(np.matmul(X_batch, w) + b)

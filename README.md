@@ -36,8 +36,7 @@ knn_pred = knn.predict(sc_test)
 * Softmax Regression
 
 ### Unsupervised Learning : 
-* Will be updated.
+* Restricted Boltzmann Machine (Bernoulli based).
 
 ### Deep Learning : 
 * Will be updated.
-
