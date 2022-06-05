@@ -1,3 +1,4 @@
+from tqdm import tqdm
 import numpy as np
 from scipy.stats import bernoulli
 np.random.seed(2022)
@@ -6,8 +7,8 @@ class RBM:
     def __init__(self, 
                  n_visible : int, 
                  n_hidden : int = 256, 
-                 w_init : str = "normal", 
-                 lr : float = 0.1, 
+                 w_init : str = "uniform", 
+                 lr : float = 0.01, 
                  num_k : int = 3):
 
         self.n_visible = n_visible
@@ -23,9 +24,9 @@ class RBM:
         loss = []
 
         if self.w_init == "normal":
-            self.W = np.random.normal(loc=0., scale=0.05, size=(self.n_visible, self.n_hidden))
+            self.W = np.random.normal(loc=0., scale=0.5, size=(self.n_visible, self.n_hidden))
         elif self.w_init == "uniform":
-            self.W = np.random.uniform(low=-0.05, high=0.05, size=(self.n_visible, self.n_hidden))
+            self.W = np.random.uniform(low=0., high=1., size=(self.n_visible, self.n_hidden))
         else :
             raise ValueError("Only normal and uniform is available.")
 
@@ -70,7 +71,7 @@ class RBM:
             loss.append(np.mean(batch_err))
 
             if data_val is not None :
-                val_loss.append( self.__energyLoss(data_val, self.reconstruct(data_val), batch_size) )
+                val_loss.append( self.__energyLoss(data_val, self.reconstruct(data_val), len(data_val)) )
                 t.set_description(f"Loss : {loss[i]}, Val Loss : {val_loss[i]}")
                 self.val_loss = np.array(val_loss)
             else :
