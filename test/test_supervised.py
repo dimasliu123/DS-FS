@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import load_breast_cancer
 from algo.preprocess import Standardize
-from algo.ml_supervised import KNearestNeighbor, GaussianNB, LogisticRegression, SoftmaxRegression
+from algo.ml.supervised import KNearestNeighbor, GaussianNB, LogisticRegression, SoftmaxRegression
 
 def accuracy(y_true, y_pred):
     return np.sum(y_true == y_pred) / len(y_true) * 100

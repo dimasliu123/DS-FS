@@ -1,3 +1,4 @@
+from typing import List, Tuple, MutableSequence, Callable
 from tqdm import tqdm
 from collections import Counter
 import numpy as np
@@ -5,10 +6,10 @@ np.random.seed(2022)
 
 # Naive Bayes 
 class GaussianNB:
-    def __init__(self):
+    def __init__(self) -> None :
         pass
 
-    def fit(self, X, y):
+    def fit(self, X, y) -> None:
         n_samples, n_feat = X.shape
         n_classes = len(np.unique(y))
         mu = np.zeros((n_classes, n_feat))
@@ -26,11 +27,11 @@ class GaussianNB:
         self.prior = prior
         self.n_classes = n_classes
 
-    def predict(self, X):
-        y_hat = [self.__calcPosterior(x) for x in X]
-        return np.argmax(np.array(y_hat), axis=-1)
+    def predict(self, X) -> List[int]:
+        y_hat = np.array([self.__calcPosterior(x) for x in X])
+        return np.argmax(y_hat, axis=-1)
 
-    def __gaussianPDF(self, X, mu, sigma):
+    def __gaussianPDF(self, X, mu, sigma) -> List[List[ float ] ]:
         gauss = 1 / np.sqrt(sigma * 2 * np.pi)
         prob = np.exp(-0.5 * ((X - mu) ** 2 / sigma))
         return gauss * prob
@@ -54,7 +55,7 @@ class KNearestNeighbor:
         self.num_k = num_k
         self.mode = mode.lower()
         
-    def fit(self, X, y):
+    def fit(self, X, y) -> None:
         X, y = np.array(X), np.array(y)
         assert len(X) == len(y), f"Feature has {len(X)} while label has {len(y)}."
         n_label = len(np.unique(y))
@@ -114,7 +115,7 @@ class LogisticRegression :
         assert threshold < 1.0 and threshold > 0.0, f"Threshold has to be between 0 and 1 !"
         self.threshold = threshold
     
-    def fit(self, X, y, batch_size = 32, data_val : tuple = None):
+    def fit(self, X : List[ List[ float ] ], y : List[ List[ float ] ], batch_size : int = 32, data_val : Callable[ tuple, None ] = None) -> None:
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
@@ -205,17 +206,20 @@ class LogisticRegression :
         else : 
             self.w = w
         
-    def predict(self, X):
-        assert X.shape[1] == len(self.w), f"Different shape {X.shape[1]} with fitted data {len(self.w)}!"
+    def proba(self, X : List[ List[ float ] ]) -> List[ int ] :
+        assert X.shape[1] == len(self.w), f"Different shape {X.shape[1]} with fitted data{len(self.w)} !"
 
         if self.use_bias :
             z = self.__sigmoid(np.matmul(X, self.w) + self.b )
-        else : 
+        else :
             z = self.__sigmoid(np.matmul(X, self.w))
+        return z
 
+    def predict(self, X : List[ List[ float ] ]) -> List[ int ]:
+        z = self.proba(X)
         return np.array([1 if i > self.threshold else 0 for i in z])
     
-    def __gradientDescent(self, X, y_true, y_hat):
+    def __gradientDescent(self, X : List[ List[float] ], y_true : List[int], y_hat : List[int]) :
         if self.use_bias : 
             dw = (1 / len(X) * np.matmul(X.T, (y_hat - y_true))) # Calculate Gradient Descent for the weights
             db = (1 / len(X) * np.sum(y_hat - y_true)) # Calculate Gradient Descent for the bias
@@ -252,14 +256,14 @@ class SoftmaxRegression :
                  lr : float = 0.01,
                  use_bias : bool = True,
                  init : str = "normal",
-                 epsilon : float = 1e-8):
+                 epsilon : float = 1e-8) -> None :
         self.steps = steps
         self.lr = lr
         self.use_bias = use_bias
         self.init = init.lower()
         self.epsilon = epsilon
         
-    def fit(self, X, y, batch_size = 32, data_val : tuple = None):
+    def fit(self, X, y, batch_size : int = 32, data_val : tuple = None) -> None:
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data."
         assert len(X) == len(y), f"Feature size {len(X)} has different size with label size len(y)"
@@ -338,7 +342,6 @@ class SoftmaxRegression :
             self.w, self.b = w, b
         else : 
             self.w = w
-
         
     def predict(self, X):
         X = np.array(X)
@@ -350,7 +353,7 @@ class SoftmaxRegression :
             z = self.__softmax(np.matmul(X, self.w))
         return np.argmax(z, axis=-1)
     
-    def __gradientDescent(self, X, y_true, y_hat):
+    def __gradientDescent(self, X : np.array, y_true : np.array, y_hat : np.array) -> Tuple[ np.array, np.array ]:
         if self.use_bias : 
             dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true)) # Calculate gradient descent for the weights
             db =  (1 / len(X)) * np.sum(y_hat - y_true) # Calculate gradient descent for the bias
@@ -360,7 +363,7 @@ class SoftmaxRegression :
             dw = (1 / len(X)) * np.matmul(X.T, (y_hat - y_true))
             return dw
 
-    def __update(self, w, dw, b = None, db = None):
+    def __update(self, w : np.array, dw : np.array, b : np.array = None, db : np.array = None) -> Tuple[ np.array, np.array ]:
         if self.use_bias:
             w = w - self.lr * dw
             b = b - self.lr * db
@@ -405,4 +408,3 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
         for i in range(X1):
             dist += ((X1[i] - X2[i]) ** 2)
         return np.sqrt(dist)
-
