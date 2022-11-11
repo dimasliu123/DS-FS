@@ -1,4 +1,4 @@
-from typing import List, Tuple, MutableSequence, Callable
+from typing import List, Tuple, Callable
 from tqdm import tqdm
 from collections import Counter
 import numpy as np
@@ -115,7 +115,11 @@ class LogisticRegression :
         assert threshold < 1.0 and threshold > 0.0, f"Threshold has to be between 0 and 1 !"
         self.threshold = threshold
     
-    def fit(self, X : List[ List[ float ] ], y : List[ List[ float ] ], batch_size : int = 32, data_val : Callable[ tuple, None ] = None) -> None:
+    def fit(self, 
+            X : List[ List[float] ], 
+            y : List[ List[float] ], 
+            batch_size : int = 32, 
+            data_val : Callable[ Tuple[ List[ List[float] ] ], List[float] ] = None) -> None:
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
@@ -263,7 +267,11 @@ class SoftmaxRegression :
         self.init = init.lower()
         self.epsilon = epsilon
         
-    def fit(self, X, y, batch_size : int = 32, data_val : tuple = None) -> None:
+    def fit(self, 
+            X : List[ List[float] ], 
+            y : List[float], 
+            batch_size : int = 32, 
+            data_val : Callable[List[ List[float] ], List[float] ]= None) -> None:
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data."
         assert len(X) == len(y), f"Feature size {len(X)} has different size with label size len(y)"
@@ -383,7 +391,7 @@ class SoftmaxRegression :
         y_ohe[np.arange(len(y)), y] = 1
         return y_ohe 
     
-    def __categoryLogLoss(self, y_true, y_pred): # TODO : Fix gradient clipping on Softmax Regression
+    def __categoryLogLoss(self, y_true, y_pred):
         y_pred = np.clip(y_pred, a_min = self.epsilon, a_max = 1 - self.epsilon)
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]) + self.epsilon)
 
