@@ -10,8 +10,8 @@ class GaussianNB:
         pass
 
     def fit(self, X, y) -> None:
-        n_samples, n_feat = X.shape
-        n_classes = len(np.unique(y))
+        n_samples : int, n_feat : int = X.shape
+        n_classes : int = len(np.unique(y))
         mu = np.zeros((n_classes, n_feat))
         sigma = np.zeros((n_classes, n_feat))
         prior = np.zeros(n_classes)
@@ -27,11 +27,11 @@ class GaussianNB:
         self.prior = prior
         self.n_classes = n_classes
 
-    def predict(self, X) -> List[int]:
+    def predict(self, X : List[ List[float] ]) -> List[int]:
         y_hat = np.array([self.__calcPosterior(x) for x in X])
         return np.argmax(y_hat, axis=-1)
 
-    def __gaussianPDF(self, X, mu, sigma) -> List[List[ float ] ]:
+    def __gaussianPDF(self, X : List[ List[float] ], mu : List[ List[float] ], sigma : List[ List[float] ]) -> List[List[ float ] ]:
         gauss = 1 / np.sqrt(sigma * 2 * np.pi)
         prob = np.exp(-0.5 * ((X - mu) ** 2 / sigma))
         return gauss * prob
@@ -55,14 +55,14 @@ class KNearestNeighbor:
         self.num_k = num_k
         self.mode = mode.lower()
         
-    def fit(self, X, y) -> None:
+    def fit(self, X : List[ List[float] ], y : List[int]) -> None:
         X, y = np.array(X), np.array(y)
         assert len(X) == len(y), f"Feature has {len(X)} while label has {len(y)}."
         n_label = len(np.unique(y))
         self.n_samples, self.n_features = X.shape
         self.feature, self.label = X, y
 
-    def predict(self, X_test):
+    def predict(self, X_test : List[ List[float] ]) -> List[int]:
         assert X_test.shape[1] == self.feature.shape[1], f"Fitted feature has different size as predicted."
         y_hat = []
         for i in X_test :
@@ -74,26 +74,29 @@ class KNearestNeighbor:
                     dist = KNearestNeighbor.manhattanDistance(i, j)
                 distance.append(dist)
             distance = np.array(distance)
-            nearestNeighbor = np.argsort(distance)[:self.num_k]
+            nearestNeighbor = self.__sortNeighbor(distance)
             y_knn = self.__findMaxVote(self.label, nearestNeighbor)
             y_hat.append(y_knn)
         return np.array(y_hat)
 
     @staticmethod
-    def euclideanDistance(p, q):
+    def euclideanDistance(p : List[float], q : List[float]) -> float:
         dist = 0
         for i in range(len(p)):
-            dist += ((p[i] - q[i]))  ** 2
+            dist += ((p[i] - q[i])) ** 2
         return np.sqrt(dist)
         
     @staticmethod
-    def manhattanDistance(p, q):
+    def manhattanDistance(p : List[float], q : List[float]) -> float :
         dist = 0
         for i in range(len(p)):
             dist += np.abs((p[i] - q[i]))
         return dist
  
-    def __findMaxVote(self, y, neighbor):
+    def __sortNeighbor(self, dist : List[float]) -> List[float] :
+        return np.argsort(distance)[:self.num_k]
+
+    def __findMaxVote(self, y : List[int], neighbor : List[float]):
         vote = Counter(y[neighbor])
         return vote.most_common()[0][0]
 
@@ -117,9 +120,9 @@ class LogisticRegression :
     
     def fit(self, 
             X : List[ List[float] ], 
-            y : List[ List[float] ], 
+            y : List[int], 
             batch_size : int = 32, 
-            data_val : Callable[ Tuple[ List[ List[float] ] ], List[float] ] = None) -> None:
+            data_val : Callable[ Tuple[ List[ List[float] ] ], List[int] ] = None) -> None:
         X, y = np.array(X), np.array(y)
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data"
         assert len(np.unique(y)) == 2, "Logistic Regression can only be used as binary classification. Use Softmax Regression instead."
@@ -250,7 +253,6 @@ class LogisticRegression :
         notation1 = y_true * np.log(y_pred + self.epsilon)
         notation2 = ( 1 - y_true) * np.log(1 - y_pred + self.epsilon)
         notation = notation1 + notation2
-
         return - np.mean(notation)
 
 # Softmax Regression
@@ -269,12 +271,15 @@ class SoftmaxRegression :
         
     def fit(self, 
             X : List[ List[float] ], 
-            y : List[float], 
+            y : List[int], 
             batch_size : int = 32, 
             data_val : Callable[List[ List[float] ], List[float] ]= None) -> None:
+
         X, y = np.array(X), np.array(y)
+
         assert batch_size <= len(X), "Batch size can't be bigger than size of the data."
         assert len(X) == len(y), f"Feature size {len(X)} has different size with label size len(y)"
+
         if data_val is not None :
             assert len(data_val) == 2, "Validation data is only for feature and size !"
             X_val, y_val = data_val
@@ -351,12 +356,12 @@ class SoftmaxRegression :
         else : 
             self.w = w
         
-    def predict(self, X):
+    def predict(self, X : List[ List[float] ]) -> List[int] :
         X = np.array(X)
         assert X.shape[1] == self.m, f"{X.shape[1]} has not the same shape as fit !"
 
         if self.use_bias : 
-            z = self.__softmax(np.matmul(X, self.w))
+            z = self.__softmax(np.matmul(X, self.w) + self.b)
         else :
             z = self.__softmax(np.matmul(X, self.w))
         return np.argmax(z, axis=-1)
@@ -381,17 +386,17 @@ class SoftmaxRegression :
             w = w - self.lr * dw
             return w
         
-    def __softmax(self, z):
+    def __softmax(self, z : List[ List[ float ] ]) -> List[ List[float] ]:
         exp_z = np.exp(z)
         return exp_z / exp_z.sum()
     
-    def __OneHot(self, y):
+    def __OneHot(self, y : List[int]) -> List[ List[float] ] :
         num_classes = len(np.unique(y))
         y_ohe = np.zeros((len(y), num_classes))
         y_ohe[np.arange(len(y)), y] = 1
         return y_ohe 
     
-    def __categoryLogLoss(self, y_true, y_pred):
+    def __categoryLogLoss(self, y_true : List[int], y_pred : List[float]) -> float :
         y_pred = np.clip(y_pred, a_min = self.epsilon, a_max = 1 - self.epsilon)
         return - np.mean(np.log(y_pred[np.arange(len(y_true)), y_true]) + self.epsilon)
 
@@ -401,7 +406,7 @@ class LearningVectorQuantization: # x = x + lr * (t - x ), lr = a * ( 1 - (epoch
         self.lr = lr
         self.epochs = epochs
 
-    def fit(self, X):
+    def fit(self, X) -> None :
         self.X = X
 
     def predict(self, X):

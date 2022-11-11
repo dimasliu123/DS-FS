@@ -1,3 +1,4 @@
+from typing import List, Optional
 from tqdm import tqdm
 import numpy as np
 from scipy.stats import bernoulli
@@ -18,7 +19,12 @@ class RBM:
         self.num_k = num_k
         self.W = None
 
-    def fit(self, X, data_val = None, batch_size : int = 32, steps : int = 3000):
+    def fit(self, 
+            X : List[ List[float] ], 
+            data_val : Optional[ List[ List[float] ] ] = None, 
+            batch_size : int = 32, 
+            steps : int = 3000) -> None :
+
         X = np.array(X)
         N, m = X.shape
         loss = []
@@ -79,7 +85,7 @@ class RBM:
 
         self.loss = np.array(loss)
 
-    def reconstruct(self, X):
+    def reconstruct(self, X : List[ List[float] ]) -> List[ List[float] ]:
         if self.W is None :
             raise ValueError("Model has not trained yet.")
 
@@ -93,20 +99,20 @@ class RBM:
 
         return V_gibbs
 
-    def __P_HV(self, X):
+    def __P_HV(self, X : List[ List[float] ]) -> List[ List[float] ]:
         z = self.__sigmoid(np.matmul(X, self.W) + self.hid) # P( H | V )
         return z
 
-    def __P_VH(self, z):
+    def __P_VH(self, z : List[ List[float] ]) -> List[ List[float] ]:
         H_z = self.__sigmoid(np.matmul(z, self.W.T) + self.vis) # P (V | H )
         return H_z
 
-    def __sigmoid(self, z):
+    def __sigmoid(self, z : List[ List[float] ]) -> List[ List[float] ]:
         return 1. / ( 1. + np.exp(-z) )
 
-    def __sample(self, prob): # bernoulli if p == len(p), each pi that is sampled is independent.
+    def __sample(self, prob : List[float]) -> List[float]: # bernoulli if p == len(p), each pi that is sampled is independent.
         return bernoulli.rvs(prob)
 
-    def __energyLoss(self, X, X_recon, bs):
-        err = np.sum(( X - X_recon ) ** 2) * ( 1 / bs )
+    def __energyLoss(self, X : List[ List[float] ], X_recon : List[ List[float] ], batch_size : int):
+        err = np.sum(( X - X_recon ) ** 2) * ( 1 / batch_size )
         return err
